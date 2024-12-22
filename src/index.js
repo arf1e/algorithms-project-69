@@ -1,34 +1,43 @@
+import _ from 'lodash';
+
 const processToken = (token) => {
   const term = token.match(/\w+/g);
   return term;
 };
 
-const isFullyIntersected = (arrayA, arrayB) => {
-  const [smallerArray, largerArray] = [arrayA, arrayB].sort(
-    (a, b) => a.length - b.length
-  );
-
-  for (const item of smallerArray) {
-    if (!largerArray.includes(item)) {
-      return false;
-    }
+const countRelevance = (document, searchTerm) => {
+  const { text } = document;
+  const documentTerms = processToken(text);
+  let relevance = 0;
+  for (const term of searchTerm) {
+    relevance = documentTerms.reduce(
+      (acc, documentTerm) => (documentTerm === term ? acc + 1 : acc),
+      0
+    );
   }
 
-  return true;
+  return relevance;
 };
 
-const clearSearch = (documents, word) => {
+const search = (documents, word) => {
   const searchTerm = processToken(word);
-  const result = [];
+  const matchedDocuments = [];
+
   for (const document of documents) {
     const { text, id } = document;
+
     const terms = processToken(text);
-    if (isFullyIntersected(terms, searchTerm)) {
-      result.push(id);
+    const termsIntersection = _.intersection(searchTerm, terms);
+
+    if (termsIntersection.length > 0) {
+      const relevance = countRelevance(document, searchTerm);
+      matchedDocuments.push({ id, relevance });
     }
   }
 
-  return result;
+  return matchedDocuments
+    .sort((a, b) => b.relevance - a.relevance)
+    .map(({ id }) => id);
 };
 
-export default clearSearch;
+export default search;
