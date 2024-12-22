@@ -14,4 +14,8 @@ describe('clearSearch', () => {
   it('should order search results by relevance', () => {
     expect(search(docs, 'shoot')).toEqual(['doc2', 'doc1']);
   });
+
+  it('should perform fuzzy search', () => {
+    expect(search(docs, 'shoot at me')).toEqual(['doc2', 'doc1']);
+  });
 });
